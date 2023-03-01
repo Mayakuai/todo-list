@@ -31,6 +31,9 @@ const item3 = new Item({
 });
 
 const defaultItems = [item1, item2, item3];
+
+// insertMany no longer has a callback function
+
 // Item.insertMany(defaultItems, function (err) {
 //   if (err) {
 //     console.log(err);
@@ -38,12 +41,31 @@ const defaultItems = [item1, item2, item3];
 //     console.log("Successfully saved default items to database.");
 //   }
 // });
-Item.insertMany(defaultItems);
+// Item.insertMany(defaultItems);
 
 const workItems = [];
 
 app.get("/", function (req, res) {
-  res.render("list", { listTitle: "Today", newListItems: items });
+
+//   Item.find({ }, function (err, foundItems) {
+//     res.render("list", { listTitle: "Today", newListItems: foundItems });
+// });
+
+Item.find({})
+    .then(foundItem => {
+      if (foundItem.length === 0) {
+        return Item.insertMany(defaultItems);
+      } else {
+        return foundItem;
+      }
+    })
+    .then(savedItem => {
+      res.render("list", {
+        listTitle: "Today",
+        newListItems: savedItem
+      });
+    })
+    .catch(err => console.log(err));
 });
 
 app.post("/", function (req, res) {
